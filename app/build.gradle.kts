@@ -49,6 +49,31 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    
+    // Room Database - pentru baza de date locala
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    annotationProcessor(libs.androidx.room.compiler)
+    
+    // Retrofit & Network - pentru apeluri API
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    
+    // Navigation - pentru navigarea intre ecrane
+    implementation(libs.androidx.navigation.compose)
+    
+    // ViewModel - pentru logica aplicatiei
+    implementation(libs.androidx.viewmodel.compose)
+    implementation(libs.androidx.viewmodel.ktx)
+    
+    // Coroutines - pentru operatii asincrone
+    implementation(libs.kotlinx.coroutines.android)
+    
+    // Image Loading - pentru incarcarea imaginilor
+    implementation(libs.coil.compose)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
