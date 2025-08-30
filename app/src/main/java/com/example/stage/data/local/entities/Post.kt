@@ -26,5 +26,11 @@ data class Post(
 )
 enum class PostCategory {
     CAR,
-    PARTS
+    PARTS;
+    
+    val displayName: String
+        get() = when (this) {
+            CAR -> "Mașini"
+            PARTS -> "Piese"
+        }
 }
