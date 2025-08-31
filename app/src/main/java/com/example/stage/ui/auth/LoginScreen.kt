@@ -34,12 +34,25 @@ fun LoginScreen(
     onShowError: (String) -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    // Collect shared data from ViewModel
+    val sharedEmail by viewModel.sharedEmail.collectAsState()
+    val sharedPassword by viewModel.sharedPassword.collectAsState()
+    
+    var email by remember { mutableStateOf(sharedEmail) }
+    var password by remember { mutableStateOf(sharedPassword) }
     var passwordVisible by remember { mutableStateOf(false) }
     
     val loginState by viewModel.loginState.collectAsState()
     val isLoading = loginState is LoginState.Loading
+    
+    // Update shared data when fields change
+    LaunchedEffect(email) {
+        viewModel.setSharedEmail(email)
+    }
+    
+    LaunchedEffect(password) {
+        viewModel.setSharedPassword(password)
+    }
     
     // Handle login state changes
     LaunchedEffect(loginState) {

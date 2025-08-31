@@ -36,16 +36,30 @@ fun RegisterScreen(
     viewModel: AuthViewModel = viewModel()
 ) {
     println("DEBUG: RegisterScreen composable called, viewModel=$viewModel")
+    
+    // Collect shared data from ViewModel
+    val sharedEmail by viewModel.sharedEmail.collectAsState()
+    val sharedPassword by viewModel.sharedPassword.collectAsState()
+    
     var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(sharedEmail) }
     var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf(sharedPassword) }
+    var confirmPassword by remember { mutableStateOf(sharedPassword) }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     
     val registerState by viewModel.registerState.collectAsState()
     val isLoading = registerState is RegisterState.Loading
+    
+    // Update shared data when fields change
+    LaunchedEffect(email) {
+        viewModel.setSharedEmail(email)
+    }
+    
+    LaunchedEffect(password) {
+        viewModel.setSharedPassword(password)
+    }
     
     println("DEBUG: RegisterScreen recomposed, registerState=$registerState, isLoading=$isLoading")
     

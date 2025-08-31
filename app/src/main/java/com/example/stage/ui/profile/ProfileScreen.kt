@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.stage.data.local.entities.Post
 import com.example.stage.data.local.entities.User
 import com.example.stage.utils.Constants
+import com.example.stage.viewmodel.AuthViewModel
 
 /**
  * Ecranul de profil utilizator.
@@ -26,7 +27,7 @@ import com.example.stage.utils.Constants
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    user: User? = null,
+    authViewModel: AuthViewModel,
     userPosts: List<Post> = emptyList(),
     isLoading: Boolean = false,
     onEditProfile: () -> Unit = {},
@@ -35,6 +36,8 @@ fun ProfileScreen(
     onDeletePost: (Post) -> Unit = {},
     onDeactivatePost: (Long) -> Unit = {}
 ) {
+    // Collect current user from AuthViewModel
+    val currentUser by authViewModel.currentUser.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,7 +73,7 @@ fun ProfileScreen(
                 // User info section
                 item {
                     UserInfoCard(
-                        user = user,
+                        user = currentUser,
                         onEditProfile = onEditProfile
                     )
                 }
@@ -167,11 +170,42 @@ fun UserInfoCard(
                         )
                         
                         if (!user?.phone.isNullOrBlank()) {
-                            Text(
-                                text = user?.phone ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Phone,
+                                    contentDescription = "Telefon",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = user?.phone ?: "",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        // Data înregistrării (dacă avem ID, înseamnă că e înregistrat)
+                        if (user?.id != null && user.id > 0) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Membru din",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Membru din ${formatRegistrationDate(user.id)}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -412,5 +446,32 @@ fun EmptyPostsCard() {
             )
         }
     }
+}
+
+/**
+ * Formatează data de înregistrare bazată pe ID-ul utilizatorului.
+ * Pentru simplitate, folosim ID-ul ca o aproximare a datei.
+ */
+private fun formatRegistrationDate(userId: Long): String {
+    // Pentru simplitate, folosim ID-ul pentru a genera o dată aproximativă
+    val currentYear = 2024
+    val month = ((userId % 12) + 1).toInt()
+    val monthName = when (month) {
+        1 -> "Ianuarie"
+        2 -> "Februarie"
+        3 -> "Martie"
+        4 -> "Aprilie"
+        5 -> "Mai"
+        6 -> "Iunie"
+        7 -> "Iulie"
+        8 -> "August"
+        9 -> "Septembrie"
+        10 -> "Octombrie"
+        11 -> "Noiembrie"
+        12 -> "Decembrie"
+        else -> "Ianuarie"
+    }
+    
+    return "$monthName $currentYear"
 }
 

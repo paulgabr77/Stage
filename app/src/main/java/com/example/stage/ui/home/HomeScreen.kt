@@ -18,6 +18,7 @@ import com.example.stage.data.local.entities.Post
 import com.example.stage.data.local.entities.PostCategory
 import com.example.stage.data.remote.dto.Currency
 import com.example.stage.utils.Constants
+import com.example.stage.viewmodel.HomeViewModel
 
 /**
  * Ecranul principal (home) - lista de anunțuri.
@@ -26,19 +27,19 @@ import com.example.stage.utils.Constants
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    posts: List<Post> = emptyList(),
-    selectedCurrency: Currency = Currency.RON,
-    isLoading: Boolean = false,
+    homeViewModel: HomeViewModel,
     onPostClick: (Post) -> Unit = {},
     onAddPostClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {},
-    onCurrencyChange: (Currency) -> Unit = {},
-    onCategoryFilter: (PostCategory?) -> Unit = {},
-    onSearchQuery: (String) -> Unit = {}
+    onProfileClick: () -> Unit = {}
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<PostCategory?>(null) }
+    // Collect state from ViewModel
+    val postsState by homeViewModel.postsState.collectAsState()
+    val selectedCurrency by homeViewModel.selectedCurrency.collectAsState()
+    val selectedCategory by homeViewModel.selectedCategory.collectAsState()
+    val searchQuery by homeViewModel.searchQuery.collectAsState()
+    
     var showFilters by remember { mutableStateOf(false) }
+    var expandedPostId by remember { mutableStateOf<Long?>(null) }
     
     Scaffold(
         topBar = {
@@ -97,8 +98,7 @@ fun HomeScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { 
-                    searchQuery = it
-                    onSearchQuery(it)
+                    homeViewModel.setSearchQuery(it)
                 },
                 placeholder = { Text("Caută anunțuri...") },
                 leadingIcon = {
@@ -118,15 +118,14 @@ fun HomeScreen(
                 CategoryFilterChips(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { category ->
-                        selectedCategory = category
-                        onCategoryFilter(category)
+                        homeViewModel.setCategory(category)
                     }
                 )
             }
             
             // Content
-            when {
-                isLoading -> {
+            when (val currentState = postsState) {
+                is com.example.stage.viewmodel.PostsState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -134,17 +133,33 @@ fun HomeScreen(
                         CircularProgressIndicator()
                     }
                 }
-                posts.isEmpty() -> {
-                    EmptyState(
-                        onAddPostClick = onAddPostClick
-                    )
+                is com.example.stage.viewmodel.PostsState.Success -> {
+                    if (currentState.posts.isEmpty()) {
+                        EmptyState(
+                            onAddPostClick = onAddPostClick
+                        )
+                    } else {
+                        PostsList(
+                            posts = currentState.posts,
+                            selectedCurrency = selectedCurrency,
+                            expandedPostId = expandedPostId,
+                            onPostClick = { post ->
+                                // Toggle expansion instead of navigation
+                                expandedPostId = if (expandedPostId == post.id) null else post.id
+                            }
+                        )
+                    }
                 }
-                else -> {
-                    PostsList(
-                        posts = posts,
-                        selectedCurrency = selectedCurrency,
-                        onPostClick = onPostClick
-                    )
+                is com.example.stage.viewmodel.PostsState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = currentState.message,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
@@ -188,6 +203,7 @@ fun CategoryFilterChips(
 fun PostsList(
     posts: List<Post>,
     selectedCurrency: Currency,
+    expandedPostId: Long?,
     onPostClick: (Post) -> Unit
 ) {
     LazyColumn(
@@ -198,6 +214,7 @@ fun PostsList(
             PostCard(
                 post = post,
                 selectedCurrency = selectedCurrency,
+                isExpanded = expandedPostId == post.id,
                 onClick = { onPostClick(post) }
             )
         }
@@ -212,13 +229,17 @@ fun PostsList(
 fun PostCard(
     post: Post,
     selectedCurrency: Currency,
+    isExpanded: Boolean = false,
     onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(Constants.DEFAULT_ELEVATION.dp),
-        shape = MaterialTheme.shapes.medium
+        elevation = CardDefaults.cardElevation(if (isExpanded) 8.dp else Constants.DEFAULT_ELEVATION.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isExpanded) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier.padding(Constants.DEFAULT_PADDING.dp)
@@ -256,11 +277,17 @@ fun PostCard(
                 text = post.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
+                maxLines = if (isExpanded) Int.MAX_VALUE else 2,
                 overflow = TextOverflow.Ellipsis
             )
             
             Spacer(modifier = Modifier.height(12.dp))
+            
+            // Expanded details section
+            if (isExpanded) {
+                ExpandedPostDetails(post = post)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
             
             // Footer
             Row(
@@ -380,5 +407,169 @@ private fun formatPrice(price: Double, currency: Currency): String {
 private fun formatDate(timestamp: Long): String {
     // TODO: Implement proper date formatting
     return "Acum 2 ore"
+}
+
+/**
+ * Secțiunea cu toate detaliile anunțului când este expandat.
+ */
+@Composable
+fun ExpandedPostDetails(post: Post) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp),
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(
+                text = "Detalii complete",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Contact information
+            if (post.contactPhone != null || post.contactEmail != null) {
+                Text(
+                    text = "Contact",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                if (post.contactPhone != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = "Telefon",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = post.contactPhone,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                
+                if (post.contactEmail != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = "Email",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = post.contactEmail,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Location
+            if (post.location != null) {
+                Text(
+                    text = "Locație",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Locație",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = post.location,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Car details (if it's a car post)
+            if (post.category == PostCategory.CAR) {
+                Text(
+                    text = "Detalii mașină",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                // TODO: Add car details from CarDetails entity
+                // For now, we'll show a placeholder
+                Text(
+                    text = "Detalii mașină vor fi afișate aici",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Post metadata
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Informații anunț",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "ID anunț",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "ID: ${post.id}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Status",
+                    modifier = Modifier.size(16.dp),
+                    tint = if (post.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (post.isActive) "Activ" else "Inactiv",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (post.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
 }
 

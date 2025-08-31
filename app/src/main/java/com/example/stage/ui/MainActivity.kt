@@ -23,6 +23,10 @@ import com.example.stage.utils.Constants
 import com.example.stage.utils.DependencyProvider
 import com.example.stage.viewmodel.AuthViewModel
 import com.example.stage.viewmodel.AuthViewModelFactory
+import com.example.stage.viewmodel.HomeViewModel
+import com.example.stage.viewmodel.HomeViewModelFactory
+import com.example.stage.viewmodel.AddPostViewModel
+import com.example.stage.viewmodel.AddPostViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,14 +56,20 @@ fun StageApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
     
-    // Obține UserRepository din DependencyProvider
+    // Obține Repository-uri din DependencyProvider
     val userRepository = DependencyProvider.getUserRepository()
+    val postRepository = DependencyProvider.getPostRepository()
+    val exchangeRateRepository = DependencyProvider.getExchangeRateRepository()
     
-    // Creează ViewModelFactory pentru AuthViewModel
+    // Creează ViewModelFactory-uri
     val authViewModelFactory = AuthViewModelFactory(userRepository)
+    val homeViewModelFactory = HomeViewModelFactory(postRepository, exchangeRateRepository)
+    val addPostViewModelFactory = AddPostViewModelFactory(postRepository)
     
-    // ViewModels - folosim factory pentru AuthViewModel
+    // ViewModels - folosim factory-uri pentru injectarea dependențelor
     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
+    val homeViewModel: HomeViewModel = viewModel(factory = homeViewModelFactory)
+    val addPostViewModel: AddPostViewModel = viewModel(factory = addPostViewModelFactory)
     
     NavHost(
         navController = navController,
@@ -77,7 +87,6 @@ fun StageApp() {
                     navController.navigate(Constants.Routes.REGISTER)
                 },
                 onShowError = { errorMessage ->
-                    // TODO: Show error message (Snackbar, Toast, etc.)
                     println("Error: $errorMessage")
                 },
                 viewModel = authViewModel
@@ -96,7 +105,6 @@ fun StageApp() {
                     navController.popBackStack()
                 },
                 onShowError = { errorMessage ->
-                    // TODO: Show error message
                     println("Error: $errorMessage")
                     // Adaug Toast pentru a vedea erorile
                     android.widget.Toast.makeText(
@@ -112,9 +120,7 @@ fun StageApp() {
         // Home Screen
         composable(Constants.Routes.HOME) {
             HomeScreen(
-                posts = emptyList(), // TODO: Get from ViewModel
-                selectedCurrency = com.example.stage.data.remote.dto.Currency.RON,
-                isLoading = false,
+                homeViewModel = homeViewModel,
                 onPostClick = { post ->
                     // TODO: Navigate to post details
                     println("Clicked on post: ${post.title}")
@@ -124,18 +130,6 @@ fun StageApp() {
                 },
                 onProfileClick = {
                     navController.navigate(Constants.Routes.PROFILE)
-                },
-                onCurrencyChange = { currency ->
-                    // TODO: Update currency in ViewModel
-                    println("Currency changed to: ${currency.displayName}")
-                },
-                onCategoryFilter = { category ->
-                    // TODO: Filter posts by category
-                    println("Filter by category: ${category?.displayName}")
-                },
-                onSearchQuery = { query ->
-                    // TODO: Search posts
-                    println("Search query: $query")
                 }
             )
         }
@@ -143,6 +137,7 @@ fun StageApp() {
         // Add Post Screen
         composable(Constants.Routes.ADD_POST) {
             AddPostScreen(
+                addPostViewModel = addPostViewModel,
                 onPostCreated = {
                     navController.popBackStack()
                 },
@@ -159,7 +154,7 @@ fun StageApp() {
         // Profile Screen
         composable(Constants.Routes.PROFILE) {
             ProfileScreen(
-                user = null, // TODO: Get from ViewModel
+                authViewModel = authViewModel,
                 userPosts = emptyList(), // TODO: Get from ViewModel
                 isLoading = false,
                 onEditProfile = {

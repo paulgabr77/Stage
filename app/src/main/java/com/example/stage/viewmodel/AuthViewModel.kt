@@ -33,6 +33,13 @@ class AuthViewModel(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
     
+    // Date pentru păstrarea între ecrane
+    private val _sharedEmail = MutableStateFlow("")
+    val sharedEmail: StateFlow<String> = _sharedEmail.asStateFlow()
+    
+    private val _sharedPassword = MutableStateFlow("")
+    val sharedPassword: StateFlow<String> = _sharedPassword.asStateFlow()
+    
     /**
      * Autentifică un utilizator.
      * 
@@ -122,12 +129,49 @@ class AuthViewModel(
     }
     
     /**
+     * Setează emailul partajat între ecrane.
+     */
+    fun setSharedEmail(email: String) {
+        _sharedEmail.value = email
+    }
+    
+    /**
+     * Setează parola partajată între ecrane.
+     */
+    fun setSharedPassword(password: String) {
+        _sharedPassword.value = password
+    }
+    
+    /**
+     * Obține emailul partajat.
+     */
+    fun getSharedEmail(): String {
+        return _sharedEmail.value
+    }
+    
+    /**
+     * Obține parola partajată.
+     */
+    fun getSharedPassword(): String {
+        return _sharedPassword.value
+    }
+    
+    /**
+     * Șterge datele partajate (la logout).
+     */
+    fun clearSharedData() {
+        _sharedEmail.value = ""
+        _sharedPassword.value = ""
+    }
+    
+    /**
      * Deconectează utilizatorul curent.
      */
     fun logout() {
         _currentUser.value = null
         _loginState.value = LoginState.Idle
         _registerState.value = RegisterState.Idle
+        clearSharedData()
     }
     
     /**

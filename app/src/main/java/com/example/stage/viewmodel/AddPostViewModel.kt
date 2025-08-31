@@ -206,6 +206,70 @@ class AddPostViewModel(
     }
     
     /**
+     * Creează anunțul nou cu parametrii furnizați.
+     */
+    fun createPost(
+        title: String,
+        description: String,
+        price: Double,
+        category: PostCategory,
+        location: String? = null,
+        contactPhone: String? = null,
+        contactEmail: String? = null,
+        vin: String? = null,
+        make: String? = null,
+        model: String? = null,
+        year: Int? = null,
+        mileage: Int? = null,
+        fuelType: String? = null,
+        transmission: String? = null,
+        engineSize: String? = null,
+        color: String? = null,
+        condition: String? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                _addPostState.value = AddPostState.Loading
+                
+                val post = Post(
+                    id = 0, // Va fi generat de Room
+                    userId = 1, // TODO: Get from current user session
+                    title = title.trim(),
+                    description = description.trim(),
+                    price = price,
+                    category = category,
+                    images = emptyList(), // TODO: Implement image upload
+                    location = location,
+                    contactPhone = contactPhone,
+                    contactEmail = contactEmail
+                )
+                
+                val carDetails = if (category == PostCategory.CAR) {
+                    CarDetails(
+                        postId = 0, // Va fi setat de repository
+                        vin = vin,
+                        make = make,
+                        model = model,
+                        year = year,
+                        mileage = mileage,
+                        fuelType = fuelType,
+                        transmission = transmission,
+                        engineSize = engineSize,
+                        color = color,
+                        condition = condition
+                    )
+                } else null
+                
+                val postId = postRepository.createPost(post, carDetails)
+                _addPostState.value = AddPostState.Success(postId)
+                
+            } catch (e: Exception) {
+                _addPostState.value = AddPostState.Error("Eroare la crearea anunțului: ${e.message}")
+            }
+        }
+    }
+    
+    /**
      * Creează anunțul nou.
      * 
      * @param userId ID-ul utilizatorului care creează anunțul

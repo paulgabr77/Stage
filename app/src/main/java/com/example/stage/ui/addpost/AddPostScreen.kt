@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.stage.data.local.entities.PostCategory
 import com.example.stage.utils.Constants
+import com.example.stage.viewmodel.AddPostViewModel
 
 /**
  * Ecranul pentru adăugarea unui anunț nou.
@@ -24,10 +25,15 @@ import com.example.stage.utils.Constants
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostScreen(
+    addPostViewModel: AddPostViewModel,
     onPostCreated: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onShowError: (String) -> Unit = {}
 ) {
+    // Collect state from ViewModel
+    val addPostState by addPostViewModel.addPostState.collectAsState()
+    
+    // Local state for form fields
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -35,7 +41,6 @@ fun AddPostScreen(
     var location by remember { mutableStateOf("") }
     var contactPhone by remember { mutableStateOf("") }
     var contactEmail by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
     
     // Car details (only for CAR category)
     var vin by remember { mutableStateOf("") }
@@ -48,6 +53,19 @@ fun AddPostScreen(
     var engineSize by remember { mutableStateOf("") }
     var color by remember { mutableStateOf("") }
     var condition by remember { mutableStateOf("") }
+    
+    // Handle state changes
+    LaunchedEffect(addPostState) {
+        when (val currentState = addPostState) {
+            is com.example.stage.viewmodel.AddPostState.Success -> {
+                onPostCreated()
+            }
+            is com.example.stage.viewmodel.AddPostState.Error -> {
+                onShowError(currentState.message)
+            }
+            else -> {} // Loading state - do nothing
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -69,16 +87,33 @@ fun AddPostScreen(
                                 vin, make, model, year
                             )
                             if (validationResult.isValid) {
-                                isLoading = true
-                                // TODO: Call ViewModel createPost function
-                                // viewModel.createPost(...)
+                                // Call ViewModel createPost function
+                                addPostViewModel.createPost(
+                                    title = title,
+                                    description = description,
+                                    price = price.toDouble(),
+                                    category = category,
+                                    location = location.ifBlank { null },
+                                    contactPhone = contactPhone.ifBlank { null },
+                                    contactEmail = contactEmail.ifBlank { null },
+                                    vin = vin.ifBlank { null },
+                                    make = make.ifBlank { null },
+                                    model = model.ifBlank { null },
+                                    year = year.toIntOrNull(),
+                                    mileage = mileage.toIntOrNull(),
+                                    fuelType = fuelType.ifBlank { null },
+                                    transmission = transmission.ifBlank { null },
+                                    engineSize = engineSize.ifBlank { null },
+                                    color = color.ifBlank { null },
+                                    condition = condition.ifBlank { null }
+                                )
                             } else {
                                 onShowError(validationResult.errorMessage)
                             }
                         },
-                        enabled = !isLoading
+                        enabled = addPostState !is com.example.stage.viewmodel.AddPostState.Loading
                     ) {
-                        if (isLoading) {
+                        if (addPostState is com.example.stage.viewmodel.AddPostState.Loading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 color = MaterialTheme.colorScheme.onPrimary
