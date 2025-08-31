@@ -20,11 +20,17 @@ import com.example.stage.ui.home.HomeScreen
 import com.example.stage.ui.profile.ProfileScreen
 import com.example.stage.ui.theme.StageTheme
 import com.example.stage.utils.Constants
+import com.example.stage.utils.DependencyProvider
 import com.example.stage.viewmodel.AuthViewModel
+import com.example.stage.viewmodel.AuthViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Inițializează dependențele
+        DependencyProvider.initialize(this)
+        
         setContent {
             StageTheme {
                 Surface(
@@ -46,8 +52,14 @@ fun StageApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
     
-    // ViewModels
-    val authViewModel: AuthViewModel = viewModel()
+    // Obține UserRepository din DependencyProvider
+    val userRepository = DependencyProvider.getUserRepository()
+    
+    // Creează ViewModelFactory pentru AuthViewModel
+    val authViewModelFactory = AuthViewModelFactory(userRepository)
+    
+    // ViewModels - folosim factory pentru AuthViewModel
+    val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
     
     NavHost(
         navController = navController,

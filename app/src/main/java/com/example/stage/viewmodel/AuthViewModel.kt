@@ -3,6 +3,7 @@ package com.example.stage.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stage.data.local.entities.User
+import com.example.stage.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,10 +13,12 @@ import kotlinx.coroutines.launch
  * ViewModel pentru ecranele de autentificare (login și register).
  * Gestionează starea UI-ului și logica de business pentru autentificare.
  */
-class AuthViewModel : ViewModel() {
+class AuthViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
     
     init {
-        println("DEBUG: AuthViewModel created successfully")
+        println("DEBUG: AuthViewModel created successfully with UserRepository")
     }
     
     // State pentru login
@@ -29,9 +32,6 @@ class AuthViewModel : ViewModel() {
     // Utilizatorul curent
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
-    
-    // Lista temporară de utilizatori pentru testare
-    private val tempUsers = mutableListOf<User>()
     
     /**
      * Autentifică un utilizator.
@@ -49,19 +49,19 @@ class AuthViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                // Simulează o operație asincronă
-                kotlinx.coroutines.delay(1000)
-                
-                // Caută utilizatorul în lista temporară
-                val user = tempUsers.find { it.email == email && it.password == password }
+                println("DEBUG: Attempting login with email: $email")
+                val user = userRepository.loginUser(email, password)
                 
                 if (user != null) {
+                    println("DEBUG: Login successful for user: ${user.name}")
                     _currentUser.value = user
                     _loginState.value = LoginState.Success(user)
                 } else {
+                    println("DEBUG: Login failed - invalid credentials")
                     _loginState.value = LoginState.Error("Email sau parolă incorectă")
                 }
             } catch (e: Exception) {
+                println("DEBUG: Login exception: ${e.message}")
                 _loginState.value = LoginState.Error("Eroare la autentificare: ${e.message}")
             }
         }
@@ -90,37 +90,32 @@ class AuthViewModel : ViewModel() {
             return
         }
         
-        // Verifică dacă email-ul există deja
-        if (tempUsers.any { it.email == email }) {
-            println("DEBUG: Validation failed - email already exists")
-            _registerState.value = RegisterState.Error("Email-ul există deja")
-            return
-        }
-        
-        println("DEBUG: Setting loading state")
         _registerState.value = RegisterState.Loading
         
         viewModelScope.launch {
             try {
-                println("DEBUG: Starting async register operation")
-                // Simulează o operație asincronă
-                kotlinx.coroutines.delay(1000)
+                println("DEBUG: Starting register operation")
                 
                 val user = User(
-                    id = (tempUsers.size + 1).toLong(),
                     email = email,
                     password = password,
                     name = name,
                     phone = phone
                 )
                 
-                println("DEBUG: User created: $user")
-                tempUsers.add(user)
-                _currentUser.value = user
-                println("DEBUG: Setting success state")
-                _registerState.value = RegisterState.Success(user)
+                val userId = userRepository.registerUser(user)
+                
+                if (userId != -1L) {
+                    val newUser = user.copy(id = userId)
+                    println("DEBUG: User registered successfully with ID: $userId")
+                    _currentUser.value = newUser
+                    _registerState.value = RegisterState.Success(newUser)
+                } else {
+                    println("DEBUG: Registration failed - email already exists")
+                    _registerState.value = RegisterState.Error("Email-ul există deja")
+                }
             } catch (e: Exception) {
-                println("DEBUG: Exception in register: ${e.message}")
+                println("DEBUG: Registration exception: ${e.message}")
                 _registerState.value = RegisterState.Error("Eroare la înregistrare: ${e.message}")
             }
         }
@@ -156,7 +151,9 @@ class AuthViewModel : ViewModel() {
      * @return true dacă emailul există, false altfel
      */
     fun checkEmailExists(email: String): Boolean {
-        return tempUsers.any { it.email == email }
+        return viewModelScope.launch {
+            userRepository.userExists(email)
+        }.isCompleted
     }
 }
 

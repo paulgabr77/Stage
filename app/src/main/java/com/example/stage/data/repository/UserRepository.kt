@@ -19,9 +19,13 @@ class UserRepository(
      * @return ID-ul utilizatorului creat sau -1 dacă emailul există deja
      */
     suspend fun registerUser(user: User): Long {
+        println("DEBUG: UserRepository.registerUser called for email: ${user.email}")
         return if (!userDao.userExists(user.email)) {
-            userDao.insertUser(user)
+            val userId = userDao.insertUser(user)
+            println("DEBUG: User registered successfully with ID: $userId")
+            userId
         } else {
+            println("DEBUG: User registration failed - email already exists")
             -1L // Email-ul există deja
         }
     }
@@ -34,8 +38,16 @@ class UserRepository(
      * @return utilizatorul dacă autentificarea reușește, null altfel
      */
     suspend fun loginUser(email: String, password: String): User? {
+        println("DEBUG: UserRepository.loginUser called for email: $email")
         val user = userDao.getUserByEmail(email)
-        return if (user?.password == password) user else null
+        println("DEBUG: User found in database: $user")
+        return if (user?.password == password) {
+            println("DEBUG: Login successful for user: ${user.name}")
+            user
+        } else {
+            println("DEBUG: Login failed - invalid credentials")
+            null
+        }
     }
     
     /**
