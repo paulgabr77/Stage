@@ -19,11 +19,8 @@ import com.example.stage.data.local.entities.PostCategory
 import com.example.stage.data.remote.dto.Currency
 import com.example.stage.utils.Constants
 import com.example.stage.viewmodel.HomeViewModel
+import androidx.compose.foundation.clickable
 
-/**
- * Ecranul principal (home) - lista de anunțuri.
- * Afișează toate anunțurile active cu posibilitatea de filtrare și căutare.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -40,6 +37,7 @@ fun HomeScreen(
     
     var showFilters by remember { mutableStateOf(false) }
     var expandedPostId by remember { mutableStateOf<Long?>(null) }
+    var showCurrencyPicker by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -52,9 +50,9 @@ fun HomeScreen(
                 },
                 actions = {
                     // Currency selector
-                    IconButton(onClick = { /* TODO: Show currency picker */ }) {
+                    IconButton(onClick = { showCurrencyPicker = true }) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = Icons.Default.Create,
                             contentDescription = "Monedă: ${selectedCurrency.displayName}"
                         )
                     }
@@ -62,7 +60,7 @@ fun HomeScreen(
                     // Filter button
                     IconButton(onClick = { showFilters = !showFilters }) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = Icons.Default.FavoriteBorder,
                             contentDescription = "Filtre"
                         )
                     }
@@ -84,7 +82,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Adaugă anunț"
+                    contentDescription = "Adauga anunț"
                 )
             }
         }
@@ -100,11 +98,11 @@ fun HomeScreen(
                 onValueChange = { 
                     homeViewModel.setSearchQuery(it)
                 },
-                placeholder = { Text("Caută anunțuri...") },
+                placeholder = { Text("Cauta anunțuri...") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Caută"
+                        contentDescription = "Cauta"
                     )
                 },
                 modifier = Modifier
@@ -166,9 +164,6 @@ fun HomeScreen(
     }
 }
 
-/**
- * Chips pentru filtrarea după categorie.
- */
 @Composable
 fun CategoryFilterChips(
     selectedCategory: PostCategory?,
@@ -196,9 +191,6 @@ fun CategoryFilterChips(
     }
 }
 
-/**
- * Lista de anunțuri.
- */
 @Composable
 fun PostsList(
     posts: List<Post>,
@@ -221,9 +213,6 @@ fun PostsList(
     }
 }
 
-/**
- * Card pentru un anunț.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostCard(
@@ -336,9 +325,6 @@ fun PostCard(
     }
 }
 
-/**
- * Stare goală când nu sunt anunțuri.
- */
 @Composable
 fun EmptyState(
     onAddPostClick: () -> Unit
@@ -385,9 +371,6 @@ fun EmptyState(
     }
 }
 
-/**
- * Formatează prețul în moneda selectată.
- */
 private fun formatPrice(price: Double, currency: Currency): String {
     return when (currency) {
         Currency.RON -> "${price.toInt()} lei"
@@ -401,17 +384,11 @@ private fun formatPrice(price: Double, currency: Currency): String {
     }
 }
 
-/**
- * Formatează data de creare.
- */
 private fun formatDate(timestamp: Long): String {
     // TODO: Implement proper date formatting
-    return "Acum 2 ore"
+    return "Acum 1 ora"
 }
 
-/**
- * Secțiunea cu toate detaliile anunțului când este expandat.
- */
 @Composable
 fun ExpandedPostDetails(post: Post) {
     Card(
@@ -510,14 +487,14 @@ fun ExpandedPostDetails(post: Post) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
             
-            // Car details (if it's a car post)
+            /*// Car details (if it's a car post)
             if (post.category == PostCategory.CAR) {
                 Text(
                     text = "Detalii mașină",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 // TODO: Add car details from CarDetails entity
                 // For now, we'll show a placeholder
                 Text(
@@ -525,7 +502,7 @@ fun ExpandedPostDetails(post: Post) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+            }*/
             
             // Post metadata
             Spacer(modifier = Modifier.height(8.dp))
@@ -571,5 +548,47 @@ fun ExpandedPostDetails(post: Post) {
             }
         }
     }
+}
+
+@Composable
+fun CurrencyPickerDialog(
+    selectedCurrency: Currency,
+    onCurrencySelected: (Currency) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Selectează moneda")
+        },
+        text = {
+            Column {
+                Currency.values().forEach { currency ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onCurrencySelected(currency) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = currency == selectedCurrency,
+                            onClick = { onCurrencySelected(currency) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = currency.displayName,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Închide")
+            }
+        }
+    )
 }
 

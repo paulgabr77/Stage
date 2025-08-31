@@ -3,9 +3,12 @@ package com.example.stage.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,8 +41,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             StageTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF667eea),
+                                    Color(0xFF764ba2),
+                                    Color(0xFFf093fb)
+                                )
+                            )
+                        ),
+                    color = Color.Transparent
                 ) {
                     StageApp()
                 }
@@ -48,9 +61,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Aplicația principală cu navigare și ViewModels.
- */
 @Composable
 fun StageApp() {
     val navController = rememberNavController()
@@ -60,10 +70,11 @@ fun StageApp() {
     val userRepository = DependencyProvider.getUserRepository()
     val postRepository = DependencyProvider.getPostRepository()
     val exchangeRateRepository = DependencyProvider.getExchangeRateRepository()
+    val sharedPreferencesManager = DependencyProvider.getSharedPreferencesManager()
     
     // Creează ViewModelFactory-uri
     val authViewModelFactory = AuthViewModelFactory(userRepository)
-    val homeViewModelFactory = HomeViewModelFactory(postRepository, exchangeRateRepository)
+    val homeViewModelFactory = HomeViewModelFactory(postRepository, exchangeRateRepository, sharedPreferencesManager)
     val addPostViewModelFactory = AddPostViewModelFactory(postRepository)
     
     // ViewModels - folosim factory-uri pentru injectarea dependențelor
@@ -122,7 +133,6 @@ fun StageApp() {
             HomeScreen(
                 homeViewModel = homeViewModel,
                 onPostClick = { post ->
-                    // TODO: Navigate to post details
                     println("Clicked on post: ${post.title}")
                 },
                 onAddPostClick = {
@@ -145,7 +155,6 @@ fun StageApp() {
                     navController.popBackStack()
                 },
                 onShowError = { errorMessage ->
-                    // TODO: Show error message
                     println("Error: $errorMessage")
                 }
             )
@@ -155,10 +164,9 @@ fun StageApp() {
         composable(Constants.Routes.PROFILE) {
             ProfileScreen(
                 authViewModel = authViewModel,
-                userPosts = emptyList(), // TODO: Get from ViewModel
+                userPosts = emptyList(),
                 isLoading = false,
                 onEditProfile = {
-                    // TODO: Navigate to edit profile
                     println("Edit profile clicked")
                 },
                 onLogout = {
@@ -168,15 +176,12 @@ fun StageApp() {
                     }
                 },
                 onPostClick = { post ->
-                    // TODO: Navigate to post details
                     println("Clicked on user post: ${post.title}")
                 },
                 onDeletePost = { post ->
-                    // TODO: Delete post
                     println("Delete post: ${post.title}")
                 },
                 onDeactivatePost = { postId ->
-                    // TODO: Deactivate post
                     println("Deactivate post: $postId")
                 }
             )

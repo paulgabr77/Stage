@@ -233,12 +233,12 @@ class AddPostViewModel(
                 
                 val post = Post(
                     id = 0, // Va fi generat de Room
-                    userId = 1, // TODO: Get from current user session
+                    userId = 1,
                     title = title.trim(),
                     description = description.trim(),
                     price = price,
                     category = category,
-                    images = emptyList(), // TODO: Implement image upload
+                    images = emptyList(),
                     location = location,
                     contactPhone = contactPhone,
                     contactEmail = contactEmail

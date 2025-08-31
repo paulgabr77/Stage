@@ -7,20 +7,10 @@ import com.example.stage.data.remote.dto.Currency
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-/**
- * Repository pentru operațiile cu rate-urile de schimb.
- * Combină API-ul extern cu cache-ul local și logica de business.
- */
 class ExchangeRateRepository(
     private val exchangeRateApi: ExchangeRateApi
 ) {
-    
-    /**
-     * Obține rate-urile de schimb pentru o monedă de bază.
-     * 
-     * @param baseCurrency moneda de bază (implicit RON)
-     * @return Flow cu rate-urile de schimb
-     */
+
     fun getLatestRates(baseCurrency: String = "RON"): Flow<ExchangeRateResponse> = flow {
         try {
             val response = exchangeRateApi.getLatestRates(baseCurrency)
@@ -36,15 +26,7 @@ class ExchangeRateRepository(
             ))
         }
     }
-    
-    /**
-     * Convertește o sumă între două monede.
-     * 
-     * @param fromCurrency moneda de la care se convertește
-     * @param toCurrency moneda către care se convertește
-     * @param amount suma de convertit
-     * @return Flow cu rezultatul conversiei
-     */
+
     fun convertCurrency(
         fromCurrency: String,
         toCurrency: String,
@@ -70,14 +52,7 @@ class ExchangeRateRepository(
             ))
         }
     }
-    
-    /**
-     * Obține rate-urile pentru monedele specificate.
-     * 
-     * @param baseCurrency moneda de bază
-     * @param targetCurrencies lista de monede țintă
-     * @return Flow cu rate-urile de schimb
-     */
+
     fun getSpecificRates(
         baseCurrency: String,
         targetCurrencies: List<String>
@@ -100,16 +75,7 @@ class ExchangeRateRepository(
             ))
         }
     }
-    
-    /**
-     * Convertește o sumă folosind rate-urile din cache.
-     * 
-     * @param amount suma de convertit
-     * @param fromCurrency moneda de la care se convertește
-     * @param toCurrency moneda către care se convertește
-     * @param rates rate-urile de schimb disponibile
-     * @return suma convertită
-     */
+
     fun convertWithRates(
         amount: Double,
         fromCurrency: String,
@@ -123,13 +89,7 @@ class ExchangeRateRepository(
             amount * rate
         }
     }
-    
-    /**
-     * Obține rate-urile implicite pentru cazul când API-ul nu este disponibil.
-     * 
-     * @param baseCurrency moneda de bază
-     * @return mapă cu rate-urile implicite
-     */
+
     private fun getDefaultRates(baseCurrency: String): Map<String, Double> {
         return when (baseCurrency) {
             "RON" -> mapOf(
@@ -162,14 +122,7 @@ class ExchangeRateRepository(
             )
         }
     }
-    
-    /**
-     * Obține un rate implicit între două monede.
-     * 
-     * @param fromCurrency moneda de la care se convertește
-     * @param toCurrency moneda către care se convertește
-     * @return rate-ul implicit
-     */
+
     private fun getDefaultRate(fromCurrency: String, toCurrency: String): Double {
         return when {
             fromCurrency == toCurrency -> 1.0
@@ -180,12 +133,6 @@ class ExchangeRateRepository(
             else -> 1.0 // Rate implicit pentru alte combinații
         }
     }
-    
-    /**
-     * Obține toate monedele suportate.
-     * 
-     * @return lista cu toate monedele
-     */
     fun getSupportedCurrencies(): List<Currency> {
         return Currency.values().toList()
     }

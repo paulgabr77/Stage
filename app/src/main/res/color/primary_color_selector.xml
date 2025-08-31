@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Dark mode -->
+    <item android:color="#3498db" android:state_enabled="true" />
+    
+    <!-- Light mode (default) -->
+    <item android:color="#667eea" />
+    
+</selector>

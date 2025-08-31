@@ -18,10 +18,6 @@ import com.example.stage.data.local.entities.PostCategory
 import com.example.stage.utils.Constants
 import com.example.stage.viewmodel.AddPostViewModel
 
-/**
- * Ecranul pentru adăugarea unui anunț nou.
- * Permite utilizatorilor să creeze anunțuri pentru mașini sau piese.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostScreen(
@@ -201,11 +197,11 @@ fun AddPostScreen(
                     OutlinedTextField(
                         value = price,
                         onValueChange = { price = it },
-                        label = { Text("Preț (RON)") },
+                        label = { Text("Pret (RON)") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Star,
-                                contentDescription = "Preț"
+                                contentDescription = "Pret"
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -257,7 +253,7 @@ fun AddPostScreen(
                             OutlinedTextField(
                                 value = make,
                                 onValueChange = { make = it },
-                                label = { Text("Marcă") },
+                                label = { Text("Marca") },
                                 modifier = Modifier.weight(1f),
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
@@ -383,7 +379,7 @@ fun AddPostScreen(
                     modifier = Modifier.padding(Constants.DEFAULT_PADDING.dp)
                 ) {
                     Text(
-                        text = "Informații contact",
+                        text = "Informatii contact",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -394,11 +390,11 @@ fun AddPostScreen(
                     OutlinedTextField(
                         value = location,
                         onValueChange = { location = it },
-                        label = { Text("Locație") },
+                        label = { Text("Locatie") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
-                                contentDescription = "Locație"
+                                contentDescription = "Locatie"
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -455,17 +451,11 @@ fun AddPostScreen(
     }
 }
 
-/**
- * Rezultatul validării formularului.
- */
 data class AddPostValidationResult(
     val isValid: Boolean,
     val errorMessage: String = ""
 )
 
-/**
- * Validează formularul de adăugare anunț.
- */
 private fun validateForm(
     title: String,
     description: String,
@@ -489,22 +479,22 @@ private fun validateForm(
     }
     
     if (description.length > Constants.MAX_DESCRIPTION_LENGTH) {
-        return AddPostValidationResult(false, "Descrierea este prea lungă")
+        return AddPostValidationResult(false, "Descrierea este prea lunga")
     }
     
     val priceValue = price.toDoubleOrNull()
     if (priceValue == null || priceValue < Constants.MIN_PRICE || priceValue > Constants.MAX_PRICE) {
-        return AddPostValidationResult(false, "Prețul trebuie să fie un număr valid între ${Constants.MIN_PRICE} și ${Constants.MAX_PRICE}")
+        return AddPostValidationResult(false, "Pretul trebuie sa fie un numar valid intre ${Constants.MIN_PRICE} si ${Constants.MAX_PRICE}")
     }
     
     // Additional validation for car category
     if (category == PostCategory.CAR) {
         if (make.isBlank()) {
-            return AddPostValidationResult(false, "Marca este obligatorie pentru mașini")
+            return AddPostValidationResult(false, "Marca este obligatorie pentru masini")
         }
         
         if (model.isBlank()) {
-            return AddPostValidationResult(false, "Modelul este obligatoriu pentru mașini")
+            return AddPostValidationResult(false, "Modelul este obligatoriu pentru masini")
         }
         
         val yearValue = year.toIntOrNull()

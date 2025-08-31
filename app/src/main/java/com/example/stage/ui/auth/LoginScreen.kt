@@ -22,10 +22,6 @@ import com.example.stage.utils.Constants
 import com.example.stage.viewmodel.AuthViewModel
 import com.example.stage.viewmodel.LoginState
 
-/**
- * Ecranul de autentificare (login).
- * Permite utilizatorilor să se autentifice cu email și parolă.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -78,7 +74,7 @@ fun LoginScreen(
     ) {
         // Logo și titlu
         Icon(
-            imageVector = Icons.Default.Star,
+            imageVector = Icons.Default.Face,
             contentDescription = "Logo",
             modifier = Modifier.size(80.dp),
             tint = MaterialTheme.colorScheme.primary
@@ -93,7 +89,7 @@ fun LoginScreen(
         )
         
         Text(
-            text = "Autentifică-te în contul tău",
+            text = "Autentifică-te în contul tau",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -146,7 +142,7 @@ fun LoginScreen(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = Icons.Default.Star,
-                                contentDescription = if (passwordVisible) "Ascunde parola" else "Arată parola"
+                                contentDescription = if (passwordVisible) "Ascunde parola" else "Arata parola"
                             )
                         }
                     },
@@ -167,7 +163,7 @@ fun LoginScreen(
                         if (validateForm(email, password)) {
                             viewModel.login(email, password)
                         } else {
-                            onShowError("Te rog completează toate câmpurile")
+                            onShowError("Te rog completeaza toate campurile")
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -196,7 +192,7 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onNavigateToRegister) {
-                        Text("Înregistrează-te")
+                        Text("Inregistrează-te")
                     }
                 }
             }
@@ -206,16 +202,13 @@ fun LoginScreen(
         
         // Forgot password
         TextButton(
-            onClick = { /* TODO: Implement forgot password */ }
+            onClick = {  }
         ) {
             Text("Ai uitat parola?")
         }
     }
 }
 
-/**
- * Validează formularul de login.
- */
 private fun validateForm(email: String, password: String): Boolean {
     return email.isNotBlank() && password.isNotBlank()
 }

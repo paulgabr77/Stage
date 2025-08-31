@@ -7,6 +7,7 @@ import com.example.stage.data.local.entities.PostCategory
 import com.example.stage.data.remote.dto.Currency
 import com.example.stage.data.repository.PostRepository
 import com.example.stage.data.repository.ExchangeRateRepository
+import com.example.stage.utils.SharedPreferencesManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
  */
 class HomeViewModel(
     private val postRepository: PostRepository,
-    private val exchangeRateRepository: ExchangeRateRepository
+    private val exchangeRateRepository: ExchangeRateRepository,
+    private val sharedPreferencesManager: SharedPreferencesManager
 ) : ViewModel() {
     
     // State pentru lista de anunțuri
@@ -46,6 +48,8 @@ class HomeViewModel(
     val exchangeRates: StateFlow<Map<String, Double>> = _exchangeRates.asStateFlow()
     
     init {
+        // Încarcă categoria salvată din SharedPreferences
+        loadSavedCategory()
         loadPosts()
         loadExchangeRates()
     }
@@ -141,12 +145,22 @@ class HomeViewModel(
     }
     
     /**
-     * Schimbă categoria selectată.
+     * Încarcă categoria salvată din SharedPreferences.
+     */
+    private fun loadSavedCategory() {
+        val savedCategory = sharedPreferencesManager.getSelectedCategory()
+        _selectedCategory.value = savedCategory
+    }
+    
+    /**
+     * Schimbă categoria selectată și o salvează în SharedPreferences.
      * 
      * @param category noua categorie sau null pentru toate
      */
     fun setCategory(category: PostCategory?) {
         _selectedCategory.value = category
+        // Salvează categoria în SharedPreferences
+        sharedPreferencesManager.saveSelectedCategory(category)
     }
     
     /**

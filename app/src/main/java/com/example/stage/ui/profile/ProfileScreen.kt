@@ -20,10 +20,6 @@ import com.example.stage.data.local.entities.User
 import com.example.stage.utils.Constants
 import com.example.stage.viewmodel.AuthViewModel
 
-/**
- * Ecranul de profil utilizator.
- * Afișează informațiile utilizatorului și anunțurile sale.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -111,9 +107,6 @@ fun ProfileScreen(
     }
 }
 
-/**
- * Card cu informațiile utilizatorului.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserInfoCard(
@@ -222,9 +215,6 @@ fun UserInfoCard(
     }
 }
 
-/**
- * Card cu statisticile utilizatorului.
- */
 @Composable
 fun StatisticsCard(userPosts: List<Post>) {
     Card(
@@ -269,9 +259,6 @@ fun StatisticsCard(userPosts: List<Post>) {
     }
 }
 
-/**
- * Card pentru o statistică individuală.
- */
 @Composable
 fun StatCard(
     title: String,
@@ -305,9 +292,6 @@ fun StatCard(
     }
 }
 
-/**
- * Card pentru un anunț al utilizatorului.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserPostCard(
@@ -407,9 +391,6 @@ fun UserPostCard(
     }
 }
 
-/**
- * Card pentru starea goală când nu sunt anunțuri.
- */
 @Composable
 fun EmptyPostsCard() {
     Card(
@@ -448,13 +429,9 @@ fun EmptyPostsCard() {
     }
 }
 
-/**
- * Formatează data de înregistrare bazată pe ID-ul utilizatorului.
- * Pentru simplitate, folosim ID-ul ca o aproximare a datei.
- */
 private fun formatRegistrationDate(userId: Long): String {
     // Pentru simplitate, folosim ID-ul pentru a genera o dată aproximativă
-    val currentYear = 2024
+    val currentYear = 2022
     val month = ((userId % 12) + 1).toInt()
     val monthName = when (month) {
         1 -> "Ianuarie"

@@ -23,10 +23,6 @@ import com.example.stage.utils.Constants
 import com.example.stage.viewmodel.AuthViewModel
 import com.example.stage.viewmodel.RegisterState
 
-/**
- * Ecranul de înregistrare (register).
- * Permite utilizatorilor să își creeze un cont nou.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -100,13 +96,13 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Creează cont",
+            text = "Creeaza cont",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         
         Text(
-            text = "Completează datele pentru a crea contul tău",
+            text = "Completeaza datele pentru a crea contul tau",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -168,7 +164,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("Telefon (opțional)") },
+                    label = { Text("Telefon (optional)") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Phone,
@@ -189,18 +185,18 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Parolă") },
+                    label = { Text("Parola") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Parolă"
+                            contentDescription = "Parola"
                         )
                     },
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = if (passwordVisible) "Ascunde parola" else "Arată parola"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = if (passwordVisible) "Ascunde parola" else "Arata parola"
                             )
                         }
                     },
@@ -219,18 +215,18 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Confirmă parola") },
+                    label = { Text("Confirma parola") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Confirmă parola"
+                            contentDescription = "Confirma parola"
                         )
                     },
                     trailingIcon = {
                         IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                             Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = if (confirmPasswordVisible) "Ascunde parola" else "Arată parola"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = if (confirmPasswordVisible) "Ascunde parola" else "Arata parola"
                             )
                         }
                     },
@@ -250,15 +246,6 @@ fun RegisterScreen(
                     onClick = {
                         println("DEBUG: Butonul de register a fost apăsat")
                         println("DEBUG: name=$name, email=$email, password=${password.length} chars, confirmPassword=${confirmPassword.length} chars")
-                        
-                        // Test simplu - să vedem dacă butonul funcționează
-                        if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && password == confirmPassword) {
-                            println("DEBUG: Validare simplă OK, apel viewModel.register")
-                            viewModel.register(name, email, password, phone)
-                        } else {
-                            println("DEBUG: Validare simplă eșuată")
-                            onShowError("Te rog completează toate câmpurile și confirmă parola")
-                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
@@ -270,7 +257,7 @@ fun RegisterScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Text("Creează cont")
+                    Text("Creeaza cont")
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -286,7 +273,7 @@ fun RegisterScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onNavigateToLogin) {
-                        Text("Autentifică-te")
+                        Text("Autentifica-te")
                     }
                 }
             }
